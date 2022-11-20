@@ -2,6 +2,7 @@ package com.operation.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -25,19 +26,42 @@ public class SecurityConfig {
         this.myUserDetailsService = myUserDetailsService;
     }
     
-    
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .authorizeRequests(auth -> auth
-                        .mvcMatchers("/api/posts/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .userDetailsService(myUserDetailsService)
-                .headers(headers -> headers.frameOptions().sameOrigin())
-                .httpBasic(Customizer.withDefaults())
-                .build();
-    }
+    //Admin Configuration for login
+    @Configuration
+    @Order(1)
+    public static class App1ConfigurationAdapter {
+
+        @Bean
+        public SecurityFilterChain filterChainApp1(HttpSecurity http) throws Exception {
+            http
+            .authorizeRequests(auth -> auth
+            		.mvcMatchers("/").permitAll()
+                    .mvcMatchers("/login").permitAll()
+                    .mvcMatchers("/Successfully").authenticated()
+                    .mvcMatchers("/admin/dashboard").hasRole("ADMIN")
+                    .mvcMatchers("/user/dashboard").hasRole("USER")
+                    .anyRequest().authenticated()
+            )
+              .formLogin()
+              .loginPage("/login")
+              .loginProcessingUrl("/login")
+              .failureUrl("/login?error=loginError")
+              .defaultSuccessUrl("/Successfully")
+              
+              .and()
+              .logout()
+              .logoutUrl("/admin_logout")
+              .logoutSuccessUrl("/protectedLinks")
+              .deleteCookies("JSESSIONID")
+              
+              .and()
+              .exceptionHandling()
+              .accessDeniedPage("/403")
+              
+              .and()
+              .csrf().disable();
+           return http.build();
+        }}
     
     @Bean
     PasswordEncoder passwordEncoder() {
