@@ -22,11 +22,11 @@ public class HomeController {
 	@Autowired
 	private PasswordEncoder encoder;
 
-	@RequestMapping("/")
+	@GetMapping("/")
 	public ModelAndView home() {
 		return new ModelAndView("home");
 	}
-
+	
 	@GetMapping("/login")
 	public ModelAndView login() {
 		return new ModelAndView("login");
@@ -54,8 +54,8 @@ public class HomeController {
 
 	@PreAuthorize("hasRole('USER')")
 	@GetMapping("/user")
-	public String user() {
-		return "Hello, User!";
+	public ModelAndView userpage() {
+		return new ModelAndView("userpage");
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
